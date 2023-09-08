@@ -20,7 +20,7 @@ func (r Runtime) MarshalJSON() ([]byte, error) {
 	return []byte(quotedJSONVValue), nil
 }
 
-func (r *Runtime) UnmarshallJSON(jsonValue []byte) error {
+func (r *Runtime) UnmarshalJSON(jsonValue []byte) error {
 
 	unquotedJSONValue, err := strconv.Unquote(string(jsonValue))
 	if err != nil {
