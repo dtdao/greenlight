@@ -13,8 +13,8 @@ type Models struct {
 	Movies interface {
 		Insert(movie *Movie) error
 		Get(id int64) (*Movie, error)
-		Update(id int64) error
-		Delete(movie *Movie) error
+		Update(movie *Movie) error
+		Delete(id int64) error
 	}
 }
 

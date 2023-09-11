@@ -3,6 +3,7 @@ package data
 import (
 	"database/sql"
 	"dtdao/greenlight/internal/validator"
+	"errors"
 	"time"
 
 	"github.com/lib/pq"
@@ -54,11 +55,75 @@ func (m MovieModel) Insert(movie *Movie) error {
 }
 
 func (m MovieModel) Get(id int64) (*Movie, error) {
-	return nil, nil
+	if id < 1 {
+		return nil, ErrorRecordNotFound
+	}
+
+	var movie Movie
+	stmt := `
+	SELECT id, created_at, title, year, runtime, genres, version
+	FROM movies
+	WHERE id = $1
+	`
+	err := m.DB.QueryRow(stmt, id).Scan(
+		&movie.ID,
+		&movie.CreatedAt,
+		&movie.Title,
+		&movie.Year,
+		&movie.Runtime,
+		pq.Array(&movie.Genres),
+		&movie.Version,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrorRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &movie, nil
 }
-func (m MovieModel) Update(id int64) error {
-	return nil
+func (m MovieModel) Update(movie *Movie) error {
+	stmt := `
+	UPDATE movies
+	SET title = $1, year = $2, runtime = $3, genres = $4, version = version + 1
+	WHERE id = $5
+	RETURNING version
+	`
+	args := []any{
+		movie.Title,
+		movie.Year,
+		movie.Runtime,
+		pq.Array(movie.Genres),
+		movie.ID,
+	}
+	return m.DB.QueryRow(stmt, args...).Scan(&movie.Version)
+
 }
-func (m MovieModel) Delete(movie *Movie) error {
+func (m MovieModel) Delete(id int64) error {
+	if id < 1 {
+		return ErrorRecordNotFound
+	}
+
+	stmt := `
+	delete from movies
+	where id = $1
+	`
+	result, err := m.DB.Exec(stmt, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrorRecordNotFound
+	}
+
 	return nil
 }
