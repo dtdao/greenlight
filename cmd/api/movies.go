@@ -177,11 +177,9 @@ func (app *application) deleteMovieHanlder(w http.ResponseWriter, r *http.Reques
 }
 func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Title    string
-		Genres   []string
-		Page     int
-		PageSize int
-		Sort     string
+		Title  string
+		Genres []string
+		data.Filters
 	}
 
 	v := validator.New()
