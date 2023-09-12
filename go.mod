@@ -1,8 +1,8 @@
 module dtdao/greenlight
 
-go 1.21.1
+go 1.20
 
 require (
-	github.com/julienschmidt/httprouter v1.3.0 // indirect
-	github.com/lib/pq v1.10.2 // indirect
+	github.com/julienschmidt/httprouter v1.3.0
+	github.com/lib/pq v1.10.2
 )
