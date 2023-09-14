@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"dtdao/greenlight/internal/data"
+	"dtdao/greenlight/internal/jsonlog"
 	"flag"
 	"fmt"
 	"log"
@@ -30,14 +31,14 @@ type config struct {
 
 type application struct {
 	config config
-	logger *log.Logger
 	models data.Models
+	logger *jsonlog.Logger
 }
 
 func main() {
 	var cfg config
 
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	// logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 	flag.IntVar(&cfg.port, "port", 4000, "Api server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 
@@ -47,16 +48,17 @@ func main() {
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSql max connections idle time")
 
 	flag.Parse()
+	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
 	db, err := openDB(cfg)
 
 	if err != nil {
-		logger.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 
 	defer db.Close()
 
-	logger.Printf("database connection pool established")
+	logger.PrintInfo("database connection pool established", nil)
 
 	app := &application{
 		config: cfg,
@@ -69,15 +71,16 @@ func main() {
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.port),
 		Handler:      router,
+		ErrorLog:     log.New(logger, "", 0),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
-	logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
+	logger.PrintInfo("Starting server", map[string]string{"addr": srv.Addr, "env": cfg.env})
 
 	err = srv.ListenAndServe()
-	logger.Fatal(err)
+	logger.PrintFatal(err, nil)
 }
 
 func openDB(cfg config) (*sql.DB, error) {
