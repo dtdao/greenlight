@@ -1,10 +1,17 @@
 package data
 
 import (
+	"context"
+	"database/sql"
+	"dtdao/greenlight/internal/validator"
 	"errors"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
+)
+
+var (
+	ErrorDuplicateEmail = errors.New("duplicate email")
 )
 
 type User struct {
@@ -20,6 +27,10 @@ type User struct {
 type password struct {
 	plaintext *string
 	hash      []byte
+}
+
+type UserModel struct {
+	DB *sql.DB
 }
 
 func (p *password) Set(plaintextPassword string) error {
@@ -49,4 +60,119 @@ func (p *password) Matches(plaintextPassword string) (bool, error) {
 
 	return true, nil
 
+}
+
+func ValidateEmail(v *validator.Validator, email string) {
+	v.Check(email != "", "email", "email must be provided")
+	v.Check(validator.Matches(email, validator.EmailRX), "email", "must be a valid email address")
+}
+
+func ValidatePassword(v *validator.Validator, password string) {
+	v.Check(password != "", "password", "password must be provided")
+	v.Check(len(password) >= 8, "password", "password must be at least 8 bytes long")
+	v.Check(len(password) <= 72, "password", "password must be no more than 72 bytes long")
+}
+
+func ValidateUsers(v *validator.Validator, user *User) {
+	hasName := user.Name != ""
+	v.Check(hasName, "name", "must be provided")
+	v.Check(len(user.Name) <= 500, "name", "must be not more than 500 bytes long")
+
+	ValidateEmail(v, user.Email)
+	if user.Password.plaintext != nil {
+		ValidatePassword(v, *user.Password.plaintext)
+	}
+
+	if user.Password.hash == nil {
+		panic("missing password hash for user")
+	}
+}
+
+func (m UserModel) Insert(user *User) error {
+
+	stmt := `
+	INSERT INTO users (name, email, password_hash, activated)
+	VALUES ($1, $2, $3, $4)
+	RETURNING id, created_at, version
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+	args := []any{user.Name, user.Email, user.Password.hash, user.Activated}
+
+	err := m.DB.QueryRowContext(ctx, stmt, args...).Scan(&user.ID, &user.CreatedAt, &user.Version)
+	if err != nil {
+		switch {
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+			return ErrorDuplicateEmail
+		default:
+			return err
+		}
+
+	}
+	return nil
+}
+
+func (m UserModel) GetByEmail(email string) (*User, error) {
+	stmt := `
+	  Select id, created_at, name, email, password_hash, activated, version
+	  from users
+	  where email = $1
+	`
+
+	var user User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	err := m.DB.QueryRowContext(ctx, stmt, email).Scan(&user.ID, &user.CreatedAt, &user.Name, &user.Password.hash, &user.Activated, &user.Version)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrorRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
+}
+
+func (m UserModel) Update(user *User) error {
+	// check version to prevent race condition
+	stmt := `
+	update users
+	set name = $1, email = $2, password_hash = $3, activated = $4, version = version + 1
+	where id = $5 and version $6
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	args := []any{
+		user.Name,
+		user.Email,
+		user.Password.hash,
+		user.Activated,
+		user.ID,
+		user.Version,
+	}
+
+	err := m.DB.QueryRowContext(ctx, stmt, args...).Scan(&user.Version)
+
+	if err != nil {
+		switch {
+		case err.Error() == `pq: duplicate key value violates unique contstraint "users_email_key"`:
+			return ErrorDuplicateEmail
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrorEditConflict
+		default:
+			return err
+		}
+	}
+	return nil
 }
