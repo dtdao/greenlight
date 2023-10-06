@@ -11,9 +11,10 @@ var (
 )
 
 type Models struct {
-	Users  UserModel
-	Movies MovieModel
-	Tokens TokenModel
+	Users       UserModel
+	Movies      MovieModel
+	Tokens      TokenModel
+	Permissions PermissionModel
 	// this doesnt need to be an interface
 	// Movies interface {
 	// 	Insert(movie *Movie) error
@@ -26,8 +27,9 @@ type Models struct {
 
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Movies: MovieModel{DB: db},
-		Users:  UserModel{DB: db},
-		Tokens: TokenModel{DB: db},
+		Movies:      MovieModel{DB: db},
+		Users:       UserModel{DB: db},
+		Tokens:      TokenModel{DB: db},
+		Permissions: PermissionModel{DB: db},
 	}
 }
