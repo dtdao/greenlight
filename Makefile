@@ -13,6 +13,11 @@ confirm:
 run/api:
 	go run ./cmd/api
 
+# run/api: run the cmd/api application
+.PHONY: run/web
+run/web:
+	go run ./cmd/web
+
 # db/psql: connect to the database using psql
 .PHONY: db/psql
 db/psql:

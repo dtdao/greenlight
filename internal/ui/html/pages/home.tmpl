@@ -1,0 +1,23 @@
+{{define "title"}}Home{{end}} 
+
+
+{{define "main"}}
+    <h2>Movies</h2>
+    {{if .Movie}}
+        <table>
+            <tr>TITLE</tr>
+        </table>
+        {{range .Movie}}
+            <tr>
+                <td>{{.Title}}</td>
+            </tr>
+        {{end}}
+        </table>
+    {{else}}
+    <p>There is nothing here</p>
+    {{end}}
+{{end}}
+
+
+
+
