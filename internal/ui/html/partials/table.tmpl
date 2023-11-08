@@ -1,0 +1,25 @@
+{{define "table"}}
+    {{if .Movie}}
+    <div id="table-and-form" hx-get="/" >
+     <table>
+        <tr>
+            <th>Title</th>
+            <th>Runtime</th>
+            <th>Year</th>
+        </tr>
+        <tbody>
+        {{range .Movie}}
+        <tr>
+            <!-- Use the new clean URL style-->
+            <td><a href='/snippet/view/{{.ID}}'>{{.Title}}</a></td>
+            <td>{{.Runtime}}</td>
+            <td>{{.Year}}</td>
+        </tr>
+        {{end}}
+        </tbody>
+    </table>
+    </div>
+    {{else}}
+        <p>There's nothing to see here... yet!</p>
+    {{end}}
+{{end}}

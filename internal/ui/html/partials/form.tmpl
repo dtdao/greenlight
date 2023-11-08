@@ -1,0 +1,28 @@
+{{define "form"}}
+    <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-content">
+      <div class="modal-body">
+<form hx-post="/create" hx-target="#table-and-form">
+    <div>
+        <label>Title:</label>
+        <input type='text' name='title' value='{{.Form.Title}}'>
+    </div>
+    <div>
+        <label>Year:</label>
+        <input type='text' name='year' value='{{.Form.Year}}'>
+    </div>
+    <div>
+        <label>Runtime:</label>
+        <input type='number' name='runtime' value='{{.Form.Runtime}}'>
+    </div>
+    <div>
+        <label>Genres:</label>
+        <input type='text' name='genres' value='{{.Form.Genres}}'>
+    </div>
+    <div>
+        <input type='submit' value='Add Movie'>
+    </div>
+      </div>
+      </div>
+</form>
+{{end}}
