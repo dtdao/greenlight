@@ -6,15 +6,11 @@
             <th>Title</th>
             <th>Runtime</th>
             <th>Year</th>
+            <th>Action</th>
         </tr>
-        <tbody>
+            <tbody hx-target="closest tr" hx-swap="outerHTML">
         {{range .Movie}}
-        <tr>
-            <!-- Use the new clean URL style-->
-            <td><a href='/snippet/view/{{.ID}}'>{{.Title}}</a></td>
-            <td>{{.Runtime}}</td>
-            <td>{{.Year}}</td>
-        </tr>
+            {{template "table-item" .}}
         {{end}}
         </tbody>
     </table>
@@ -23,3 +19,35 @@
         <p>There's nothing to see here... yet!</p>
     {{end}}
 {{end}}
+
+
+{{define "table-item"}}
+        <tr>
+            <!-- Use the new clean URL style-->
+            <td>{{.Title}}</td>
+            <td>{{.Runtime}}</td>
+            <td>{{.Year}}</td>
+            <td>
+                <button  class="btn btn-outline-primary" hx-get="/edit/{{.ID}}" 
+    >Edit</button>
+            </td>
+        </tr>
+{{end}}
+
+
+{{define "table-edit-item"}}
+<tr hx-trigger='cancel' class='editing' hx-get="/contact/${contact.id}">
+ <td><input name='title' value='{{.Title}}'></td>
+  <td><input name='runtime' value='{{.Runtime}}'></td>
+  <td><input name='year' value='{{.Year}}'></td>
+  <td>
+    <button class="btn btn-danger" hx-get="/contact/${contact.id}">
+      Cancel
+    </button>
+    <button class="btn btn-danger" hx-put="/contact/${contact.id}" hx-include="closest tr">
+      Save
+    </button>
+  </td>
+</tr>
+{{end}}
+

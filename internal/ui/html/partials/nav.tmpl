@@ -1,5 +1,17 @@
 {{define "nav"}}
-<nav class="flex items-center justify-between flex-wrap p-6">
-    <span class="font-semibold text-xl tracking-tight hover:text-green-800"><a href="/">Home</a></span>
-</nav>
+<ul class="nav justify-content-end">
+    <li class="nav-item">
+        <a
+         hx-get="/add" 
+         hx-target="#modals-here" 
+         hx-trigger="click" 
+         data-bs-toggle="modal" 
+         data-bs-target="#modals-here"
+         class="nav-link"
+        >Add Movie</a>
+    </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/">Home</a>
+  </li>
+</ul>
 {{end}}

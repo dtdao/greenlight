@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
@@ -12,6 +13,10 @@ import (
 
 type TemplateData struct {
 	Movie []*data.Movie
+}
+
+type MovieData struct {
+	Movie *data.Movie
 }
 
 type movieCreateForm struct {
@@ -150,13 +155,48 @@ func (app *application) create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) routes() http.Handler {
-	router := httprouter.New()
+func (app *application) edit(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
+	if err != nil || id < 1 {
+		log.Print(err.Error())
+		http.NotFound(w, r)
+		return
+	}
 
-	router.HandlerFunc(http.MethodGet, "/", app.home)
-	router.HandlerFunc(http.MethodGet, "/add", app.form)
-	router.HandlerFunc(http.MethodPost, "/create", app.create)
+	movie, err := app.Movies.Get(id)
 
-	router.ServeFiles("/static/*filepath", http.Dir("./internal/ui/static/"))
-	return router
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	data := &MovieData{
+		Movie: movie,
+	}
+
+	ts, err := template.New("edit").Parse(`
+	{{define "table-edit-item"}}
+<tr hx-trigger='cancel' class='editing' hx-get="/contact/${contact.id}">
+  <td>
+    <button class="btn btn-danger" hx-get="/contact/${contact.id}">
+      Cancel
+    </button>
+    <button class="btn btn-danger" hx-put="/contact/${contact.id}" hx-include="closest tr">
+      Save
+    </button>
+  </td>
+</tr>
+{{end}}
+	`)
+
+	err = ts.ExecuteTemplate(w, "table-edit-item", data)
+
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
 }
