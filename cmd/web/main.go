@@ -8,12 +8,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/go-playground/form/v4"
 )
 
 type application struct {
-	Movies data.MovieModel
-
-	config config
+	Movies      data.MovieModel
+	formDecoder *form.Decoder
+	config      config
 }
 
 type config struct {
@@ -27,6 +29,8 @@ type config struct {
 func main() {
 	var cfg config
 
+	decoder := form.NewDecoder()
+
 	flag.IntVar(&cfg.port, "port", 8080, "Api server port")
 	flag.StringVar(&cfg.db.dsn, "db-dsn", fmt.Sprintf("%s%s", os.Getenv("GREENLIGHT_DB_DSN"), "?sslmode=disable"), "PostgrSQL DSN")
 
@@ -37,9 +41,11 @@ func main() {
 	}
 
 	defer db.Close()
+
 	app := &application{
-		Movies: data.MovieModel{DB: db},
-		config: cfg,
+		Movies:      data.MovieModel{DB: db},
+		config:      cfg,
+		formDecoder: decoder,
 	}
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", app.config.port),
