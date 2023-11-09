@@ -10,8 +10,17 @@
          class="nav-link"
         >Add Movie</a>
     </li>
-  <li class="nav-item">
+  <li class="nav-item" hx-boost="true"
+               hx-swap="innerHTML transition:true" 
+               hx-target="closest body"
+      >
     <a class="nav-link" href="/">Home</a>
+  </li>
+  <li class="nav-item" hx-boost="true"
+               hx-swap="innerHTML transition:true" 
+               hx-target="closest body"
+      >
+    <a class="nav-link" href="/users" >Users</a>
   </li>
 </ul>
 {{end}}

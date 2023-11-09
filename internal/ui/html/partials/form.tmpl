@@ -2,7 +2,7 @@
     <div class="modal-dialog modal-dialog-centered">
   <div class="modal-content">
       <div class="modal-body">
-<form hx-post="/create" hx-target="#table-and-form">
+<form hx-post="/create" hx-target="#table-and-form" hx-boost="true">
     <div>
         <label>Title:</label>
         <input type='text' name='title' value='{{.Form.Title}}'>
