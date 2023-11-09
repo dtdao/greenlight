@@ -15,10 +15,6 @@ type TemplateData struct {
 	Movie []*data.Movie
 }
 
-type MovieData struct {
-	Movie *data.Movie
-}
-
 type movieCreateForm struct {
 	Title   string       `form:"title"`
 	Year    int32        `form:"year"`
@@ -172,26 +168,37 @@ func (app *application) edit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &MovieData{
-		Movie: movie,
+	ts, err := template.ParseFiles("./internal/ui/html/partials/table.tmpl")
+
+	err = ts.ExecuteTemplate(w, "table-edit-item", movie)
+
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", 500)
+		return
 	}
 
-	ts, err := template.New("edit").Parse(`
-	{{define "table-edit-item"}}
-<tr hx-trigger='cancel' class='editing' hx-get="/contact/${contact.id}">
-  <td>
-    <button class="btn btn-danger" hx-get="/contact/${contact.id}">
-      Cancel
-    </button>
-    <button class="btn btn-danger" hx-put="/contact/${contact.id}" hx-include="closest tr">
-      Save
-    </button>
-  </td>
-</tr>
-{{end}}
-	`)
+}
+func (app *application) getItem(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
+	if err != nil || id < 1 {
+		log.Print(err.Error())
+		http.NotFound(w, r)
+		return
+	}
 
-	err = ts.ExecuteTemplate(w, "table-edit-item", data)
+	movie, err := app.Movies.Get(id)
+
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	ts, err := template.ParseFiles("./internal/ui/html/partials/table.tmpl")
+
+	err = ts.ExecuteTemplate(w, "table-item", movie)
 
 	if err != nil {
 		log.Print(err.Error())
