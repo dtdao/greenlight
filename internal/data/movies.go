@@ -114,6 +114,7 @@ func (m MovieModel) Update(movie *Movie) error {
 		movie.ID,
 		movie.Version,
 	}
+
 	err := m.DB.QueryRowContext(ctx, stmt, args...).Scan(&movie.Version)
 	if err != nil {
 		switch {

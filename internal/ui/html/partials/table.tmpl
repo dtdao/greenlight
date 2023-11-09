@@ -1,13 +1,15 @@
 {{define "table"}}
     {{if .Movie}}
     <div id="table-and-form">
-     <table>
+     <table class="table">
+         <thead>
         <tr>
-            <th>Title</th>
-            <th>Runtime</th>
-            <th>Year</th>
-            <th>Action</th>
+            <th scope="col" style="width: 40%">Title</th>
+            <th scope="col" style="width: 15%">Runtime</th>
+            <th scope="col" style="width: 15%">Year</th>
+            <th scope="col" style="width: 30%">Action</th>
         </tr>
+         </thead>
             <tbody hx-target="closest tr" hx-swap="outerHTML">
         {{range .Movie}}
             {{template "table-item" .}}
@@ -36,15 +38,26 @@
 	{{define "table-edit-item"}}
 		<tr hx-trigger='cancel' class='editing' hx-get="/movie/{{.ID}}">
 		  <td>
-		    <input name='title' value='{{.Title}}'>
-  			<input name='runtime' value='{{.Runtime}}'>
-  			<input name='year' value='{{.Year}}'>
-		    <button class="btn btn-danger" hx-get="/movie/{{.ID}}">
+		    <input name='title' value='{{.Title}}' type="text">
+          </td>
+          <td>
+  			<input name='runtime' value='{{.Runtime}}' type="text" style="max-width: 100px">
+          </td>
+          <td >
+  			<input name='year' value='{{.Year}}' type="number" style="max-width: 100px">
+            </td>
+            <td class="d-flex gap-3 ">
+                <div class="col-md-6">
+		    <button class="btn btn-secondary" hx-get="/movie/{{.ID}}">
 		      Cancel
 		    </button>
-		    <button class="btn btn-danger" hx-put="/contact/${contact.id}" hx-include="closest tr">
+                </div>
+                <div class="col-md-6">
+                    <button class="btn btn-secondary" hx-put="/movie/{{.ID}}" hx-include="closest tr" hx-confirm="are you sure">
 		      Save
 		    </button>
+                </div>
+            </td>
 		  </td>
 		</tr>
 	{{end}}

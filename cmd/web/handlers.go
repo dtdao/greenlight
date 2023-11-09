@@ -207,3 +207,56 @@ func (app *application) getItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func (app *application) update(w http.ResponseWriter, r *http.Request) {
+	var form movieCreateForm
+
+	err := r.ParseForm()
+
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	err = app.formDecoder.Decode(&form, r.PostForm)
+
+	params := httprouter.ParamsFromContext(r.Context())
+
+	id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
+
+	if err != nil || id < 1 {
+		log.Print(err.Error())
+		http.NotFound(w, r)
+		return
+	}
+	movie, err := app.Movies.Get(id)
+
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	ts, err := template.ParseFiles("./internal/ui/html/partials/table.tmpl")
+
+	movie.Title = form.Title
+	movie.Year = form.Year
+	movie.Runtime = form.Runtime
+
+	err = app.Movies.Update(movie)
+
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	err = ts.ExecuteTemplate(w, "table-item", movie)
+
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+}

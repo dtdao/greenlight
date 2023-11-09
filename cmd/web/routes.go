@@ -15,6 +15,7 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/edit/:id", app.edit)
 	router.HandlerFunc(http.MethodGet, "/movie/:id", app.getItem)
+	router.HandlerFunc(http.MethodPut, "/movie/:id", app.update)
 
 	router.ServeFiles("/static/*filepath", http.Dir("./internal/ui/static/"))
 	return router
