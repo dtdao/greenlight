@@ -122,13 +122,12 @@ func (m UserModel) Insert(user *User) error {
 }
 
 func (m UserModel) GetByEmail(email string) (*User, error) {
+	var user User
 	stmt := `
 	  Select id, created_at, name, email, password_hash, activated, version
 	  from users
 	  where email = $1
 	`
-
-	var user User
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
@@ -233,4 +232,49 @@ func (m UserModel) GetForToken(scope string, tokenPlainText string) (*User, erro
 	}
 
 	return &user, nil
+}
+
+func (m UserModel) GetAllUsers() ([]*User, error) {
+	stmt := `
+       SELECT id, created_at, name, email, activated, version
+	   FROM users
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	movies := []*User{}
+
+	for rows.Next() {
+		var movie User
+		err := rows.Scan(
+			&movie.ID,
+			&movie.CreatedAt,
+			&movie.Name,
+			&movie.Email,
+			&movie.Activated,
+			&movie.Version,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		movies = append(movies, &movie)
+	}
+
+	err = rows.Err()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return movies, nil
 }

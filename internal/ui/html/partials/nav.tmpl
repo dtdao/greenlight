@@ -1,14 +1,14 @@
 {{define "nav"}}
 <ul class="nav justify-content-end">
     <li class="nav-item">
-        <a
+        <div
          hx-get="/add" 
          hx-target="#modals-here" 
          hx-trigger="click" 
          data-bs-toggle="modal" 
          data-bs-target="#modals-here"
          class="nav-link"
-        >Add Movie</a>
+        >Add Movie</div>
     </li>
   <li class="nav-item" hx-boost="true"
                hx-swap="innerHTML transition:true" 
