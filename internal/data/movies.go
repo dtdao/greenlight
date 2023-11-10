@@ -216,3 +216,48 @@ func (m MovieModel) GetAll(title string, genres []string, filters Filters) ([]*M
 
 	return movies, metadata, nil
 }
+func (m MovieModel) GetAllUsers() ([]*User, error) {
+	stmt := `
+       SELECT id, created_at, name, email, activated, version
+	   FROM users
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	// totalRecords := 0
+	movies := []*User{}
+
+	for rows.Next() {
+		var movie User
+		err := rows.Scan(
+			&movie.ID,
+			&movie.CreatedAt,
+			&movie.Name,
+			&movie.Email,
+			&movie.Activated,
+			&movie.Version,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		movies = append(movies, &movie)
+	}
+
+	err = rows.Err()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return movies, nil
+}

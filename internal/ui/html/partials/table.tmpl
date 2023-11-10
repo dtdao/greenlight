@@ -62,3 +62,29 @@
 		</tr>
 	{{end}}
 
+{{define "table-users"}}
+    {{if .Users}}
+    <div id="table-and-form">
+     <table class="table">
+         <thead>
+        <tr>
+            <th scope="col" >Name</th>
+            <th scope="col" >Email</th>
+            <th scope="col"> Activated</th>
+        </tr>
+         </thead>
+            <tbody hx-target="closest tr" hx-swap="outerHTML">
+        {{range .Users}}
+        <tr>
+            <td>{{.Name}}</td>
+            <td>{{.Email}}</td>
+            <td>{{.Activated}}</td>
+        </tr>
+        {{end}}
+        </tbody>
+    </table>
+    </div>
+    {{else}}
+        <p>There's nothing to see here... yet!</p>
+    {{end}}
+{{end}}

@@ -15,6 +15,10 @@ type TemplateData struct {
 	Movie []*data.Movie
 }
 
+type UsersData struct {
+	Users []*data.User
+}
+
 type movieCreateForm struct {
 	Title   string       `form:"title"`
 	Year    int32        `form:"year"`
@@ -75,29 +79,16 @@ func (app *application) usersPage(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	var input struct {
-		Title  string
-		Genres []string
-		data.Filters
-	}
+	users, err := app.Users.GetAllUsers()
 
-	input.Title = ""
-	input.Genres = []string{}
-	input.Page = 1
-	input.PageSize = 20
-	input.Sort = "id"
-
-	input.Filters.SortSafeList = []string{"id", "title", "year", "runtime", "-id", "-title", "-year", "-runtime"}
-
-	movies, _, err := app.Movies.GetAll(input.Title, input.Genres, input.Filters)
-
-	data := &TemplateData{
-		Movie: movies,
+	data := &UsersData{
+		Users: users,
 	}
 
 	files := []string{
 		"./internal/ui/html/base.tmpl",
 		"./internal/ui/html/partials/nav.tmpl",
+		"./internal/ui/html/partials/table.tmpl",
 		"./internal/ui/html/pages/users.tmpl",
 	}
 

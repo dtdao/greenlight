@@ -14,6 +14,7 @@ import (
 
 type application struct {
 	Movies      data.MovieModel
+	Users       data.UserModel
 	formDecoder *form.Decoder
 	config      config
 }
@@ -44,6 +45,7 @@ func main() {
 
 	app := &application{
 		Movies:      data.MovieModel{DB: db},
+		Users:       data.UserModel{DB: db},
 		config:      cfg,
 		formDecoder: decoder,
 	}
