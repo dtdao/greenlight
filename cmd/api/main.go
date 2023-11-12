@@ -6,6 +6,7 @@ import (
 	"dtdao/greenlight/internal/data"
 	"dtdao/greenlight/internal/jsonlog"
 	"dtdao/greenlight/internal/mailer"
+	"dtdao/greenlight/internal/vcs"
 	"expvar"
 	"flag"
 	"fmt"
@@ -18,7 +19,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const version = "1.0.0"
+var version = vcs.Version()
 
 type config struct {
 	port int
@@ -85,7 +86,15 @@ func main() {
 		return nil
 	})
 
+	displayVersion := flag.Bool("version", false, "Display version and exit")
+
 	flag.Parse()
+
+	if *displayVersion {
+		fmt.Printf("Version:\t%s\n", version)
+		os.Exit(0)
+	}
+
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
 	db, err := openDB(cfg)
